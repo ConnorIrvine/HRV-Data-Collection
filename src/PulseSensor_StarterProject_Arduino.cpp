@@ -31,8 +31,15 @@ void loop() {
 
   Signal = analogRead(PulseSensorPurplePin);  // Read the PulseSensor's value.
   Serial.print(">");
+  Serial.print("LOWER:");
+  Serial.print(300);               // Send the Threshold value to Serial Plotter.
+  Serial.print(",");
+  Serial.print("UPPER:");
+  Serial.print(700);               // Send the Upper-Limit value to Serial Plotter
+  Serial.print(",");
   Serial.print("Signal:"); 
   Serial.print(Signal);                    // Send the Signal value to Serial Plotter.
+  Serial.print(",");
   Serial.println();
    
   if(Signal > Threshold){                          // If the signal is above "550", then "turn-on" Arduino's on-Board LED.  
