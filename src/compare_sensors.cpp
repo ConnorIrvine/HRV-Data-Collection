@@ -1,6 +1,8 @@
 #include <Arduino.h>
 
 // INDIVIDUALLY THIS CODE WORKS BUT COMBINED WE DO NOT READ THE DATA PROPERLY FOR THE POLAR SENSOR.
+// WE CAN STILL MEASURE BOTH SIMULTANEOUSLY HOWEVER PRINTING PPG SENSOR MESSES WITH POLAR SENSOR DISPLAYING PROPERLY. WORK
+// AROUND NEEDED
 
 // Pin Definitions
 const int POLAR_PIN = 7;
@@ -34,12 +36,12 @@ void readPulseSensor();
 void setup() { 
   Serial.begin(9600); 
   setupPolarSensor();
-  //setupPulseSensor();
+  setupPulseSensor();
 } 
 
 void loop() { 
   readPolarSensor();
-  //readPulseSensor();
+  readPulseSensor();
 }
 
 // ========== POLAR SENSOR FUNCTIONS ==========
@@ -102,14 +104,14 @@ void setupPulseSensor() {
 void readPulseSensor() {
   Signal = analogRead(PULSE_SENSOR_PIN);  // Read the PulseSensor's value.
   
-  Serial.print('>');
-  Serial.print("Signal:");
-  Serial.print(Signal);                    // Send the Signal value to Serial Plotter.
-  Serial.print(",lower:");
-  Serial.print(700); // To freeze the lower limit
-  Serial.print(",upper:");
-  Serial.print(300); // To freeze the lower limit
-  Serial.println();
+  //Serial.print('>');
+  //Serial.print("Signal:");
+  //Serial.print(Signal);                    // Send the Signal value to Serial Plotter.
+  //Serial.print(",lower:");
+  //Serial.print(700); // To freeze the lower limit
+  //Serial.print(",upper:");
+  //Serial.print(300); // To freeze the lower limit
+  //Serial.println();
   
   if (Signal > Threshold) {                          // If the signal is above "700", then "turn-on" Arduino's on-Board LED.
     digitalWrite(LED13, HIGH);
