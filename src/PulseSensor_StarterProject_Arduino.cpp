@@ -1,59 +1,60 @@
-#include <Arduino.h>
-/*  PulseSensor™ Starter Project   http://www.pulsesensor.com
- *   
-This an Arduino project. It's Best Way to Get Started with your PulseSensor™ & Arduino. 
--------------------------------------------------------------
-1) This shows a live human Heartbeat Pulse. 
-2) Live visualization in Arduino's Cool "Serial Plotter".
-3) Blink an LED on each Heartbeat.
-4) This is the direct Pulse Sensor's Signal.  
-5) A great first-step in troubleshooting your circuit and connections. 
-6) "Human-readable" code that is newbie friendly." 
-*/
+#include <Arduino.h>s
 
-//  Variables
-int PulseSensorPurplePin = 1;        // Pulse Sensor PURPLE WIRE connected to ANALOG PIN 0
-int LED13 = 13;   //  The on-board Arduion LED
+//Definitions   
+const int HR_RX = 7; 
+byte oldSample, sample; 
 
+// BPM calculation variables
+unsigned long lastBeatTime = 0;
+unsigned long currentBeatTime = 0;
+unsigned long beatInterval = 0;
+int BPM = 0;
+const int numReadings = 5;  // Number of readings to average
+int bpmReadings[numReadings];
+int readIndex = 0;
+int bpmTotal = 0;
+int bpmAverage = 0;
 
-int Signal;                // holds the incoming raw data. Signal value can range from 0-1024
-int Threshold = 550;            // Determine which Signal to "count as a beat", and which to ingore. 
-
-
-// The SetUp Function:
-void setup() {
-  pinMode(LED13,OUTPUT);         // pin that will blink to your heartbeat!
-   Serial.begin(9600);         // Set's up Serial Communication at certain speed. 
-}
-
-// The Main Loop Function
-void loop() {
-
-  Signal = analogRead(PulseSensorPurplePin);  // Read the PulseSensor's value.
-  Serial.print(">");
-  Serial.print("LOWER:");
-  Serial.print(300);               // Send the Threshold value to Serial Plotter.
-  Serial.print(",");
-  Serial.print("UPPER:");
-  Serial.print(700);               // Send the Upper-Limit value to Serial Plotter
-  Serial.print(",");
-  Serial.print("Signal:"); 
-  Serial.print(Signal);                    // Send the Signal value to Serial Plotter.
-  Serial.print(",");
-  Serial.println();
-   
-  if(Signal > Threshold){                          // If the signal is above "550", then "turn-on" Arduino's on-Board LED.  
-    digitalWrite(LED13,HIGH);          
-  } else {
-    digitalWrite(LED13,LOW);                //  Else, the sigal must be below "550", so "turn-off" this LED.
+void setup() { 
+  Serial.begin(9600); 
+  pinMode (HR_RX, INPUT);  //Signal pin to input   
+  Serial.println("Waiting for heart beat..."); 
+  
+  // Initialize BPM readings array
+  for (int i = 0; i < numReadings; i++) {
+    bpmReadings[i] = 0;
   }
+  
+  //Wait until a heart beat is detected   
+  while (!digitalRead(HR_RX)) {};
+  Serial.println ("Heart beat detected!");
+  lastBeatTime = millis();
+} 
 
-
-delay(10);
-   
-   
+void loop() { 
+  sample = digitalRead(HR_RX);  //Store signal output  
+  
+  if (sample && (oldSample != sample)) { 
+    // Beat detected
+    currentBeatTime = millis();
+    beatInterval = currentBeatTime - lastBeatTime;
+    lastBeatTime = currentBeatTime;
+    
+    // Calculate BPM from interval (60000 ms = 1 minute)
+    BPM = 60000 / beatInterval;
+    
+    // Add to running average
+    bpmTotal = bpmTotal - bpmReadings[readIndex];
+    bpmReadings[readIndex] = BPM;
+    bpmTotal = bpmTotal + bpmReadings[readIndex];
+    readIndex = (readIndex + 1) % numReadings;
+    bpmAverage = bpmTotal / numReadings;
+    
+    // Output results
+    Serial.print("Beat | BPM: ");
+    Serial.print(BPM);
+    Serial.print(" | Average BPM: ");
+    Serial.println(bpmAverage);
+  } 
+  oldSample = sample;           //Store last signal received  
 }
-
-
-
-
